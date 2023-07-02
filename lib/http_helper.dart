@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:developer';
-import 'dart:convert';
-import 'movie.dart';
 
 class HttpHelper {
   final String urlBase = 'api.themoviedb.org';
@@ -25,21 +23,6 @@ class HttpHelper {
     else {
       return 're';
     }
-  }
-
-  Future<List<Movie>> getUpcoming2() async {
-    Uri url = Uri.https(urlBase, uriUpcoming, queryParameters);
-    http.Response result = await http.get(url);
-
-    log(url.toString());
-    List<Movie> movies = [];
-    if (true) {
-      final jsonResponse = json.decode(result.body);
-      List moviesMap = jsonResponse['results'];
-      movies = moviesMap.map((i) => Movie.fromJson(i)).toList();
-
-      }
-      return movies;
   }
 
 }
