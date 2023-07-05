@@ -11,20 +11,31 @@ class MovieList extends StatefulWidget {
 class _MovieListState extends State<MovieList> {
 
   String result = '';
+  String searchKey = '';
   final String iconBase = 'https://image.tmdb.org/t/p/w92/';
   final String defaultImage = 'https://images.freeimages.com/images/large-previews/5eb/movie-clapboard-1184339.jpg';
+  Icon visibleIcon = Icon(Icons.search);
+  Widget searchBar= Text('Movies');
 
   @override
   void initState() {
-    initialize();
+    initialize(searchKey);
     super.initState();
   }
 
 
-  Future<List<Movie>> initialize() async {
+  Future<List<Movie>> initialize(String? title) async {
     HttpHelper helper = HttpHelper();
-    List<Movie> movies = await helper.getUpcoming2();
-    return movies;
+    if (this.visibleIcon.icon == Icons.search) {
+      List<Movie> movies = await helper.getUpcoming2();
+      return movies;
+    }else{
+      List<Movie> movies = await helper.findMovies(title);
+      setState(() {
+        searchKey = title ?? '';
+      });
+      return movies;
+    }
   }
 
     @override
@@ -39,14 +50,41 @@ class _MovieListState extends State<MovieList> {
     );*/
       NetworkImage image;
     return Scaffold(
-        appBar: AppBar(title: Text('Movies')),
+        appBar: AppBar(title: searchBar,
+            actions: <Widget>[
+              IconButton(
+                  icon: visibleIcon,
+                  onPressed: () {
+                    setState(() {
+                      if (this.visibleIcon.icon == Icons.search) {
+                        this.visibleIcon = Icon(Icons.cancel);
+                        this.searchBar = TextField(
+                              textInputAction: TextInputAction.search,
+                              style: TextStyle(color: Colors.white, fontSize: 20.0),
+                              onSubmitted: (String text) {
+                                initialize(text);
+                              },
+                          autofocus: true,
+                         );
+                      } else {
+                        setState(() {
+                          this.visibleIcon = Icon(Icons.search);
+                          this.searchBar= Text('Movies');
+                          searchKey = '';
+                        });
+                      }
+                    }
+                    );
+                  },
+              ),
+            ]
+        ),
         /*body: Container(
             child: Text(result)
         )*/
-
       body: Container(
         child: FutureBuilder(
-            future: initialize(),
+            future: initialize(searchKey),
             builder: (BuildContext context, AsyncSnapshot<List<Movie>> movies) {
               return ListView.builder(
                 itemCount: movies.data?.length ?? 0,
